@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinematic Solar System — three.js</title>
+
+  <!-- Import Map: map bare imports to CDN URLs -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+      }
+    }
+  </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app"></div>
+  <div class="hud">
+    <button id="toggle">⏯️ Pause</button>
+    <div class="group">
+      <label for="speed">Time Scale</label>
+      <input id="speed" type="range" min="0" max="8" step="0.1" value="1.0" />
+    </div>
+    <div class="group">
+      <label for="bloom">Bloom</label>
+      <input id="bloom" type="range" min="0" max="2" step="0.01" value="0.9" />
+    </div>
+    <button id="focusEarth">Focus Earth</button>
+    <button id="earthMode">Earth Mode</button>
+    <button id="solarMode" style="display:none">Solar Mode</button>
+    <button id="audioBtn">Audio Sync</button>
+    <input id="audioFile" type="file" accept="audio/*" style="display:none" />
+  </div>
+  <div class="legend">
+    <b>Controls</b> — 左键旋转 · 右键平移 · 滚轮缩放。点击行星可飞过去；新增「Earth Mode」：高精地球 + 云层 + 大气散射。
+  </div>
+  <div class="credit">Built with three.js · PostFX: UnrealBloom · Lensflare · Atmosphere shader</div>
+  <div class="test-panel" id="testPanel"><span class="badge" id="testSummary">Tests</span><ul id="testList"></ul></div>
+  <div class="card" id="infoCard"><h3 id="cardTitle"></h3><div id="cardBody"></div><small id="cardTip">Click empty space to dismiss</small></div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
