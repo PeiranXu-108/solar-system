@@ -391,12 +391,18 @@ toggleEl.addEventListener("click", () => {
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let currentTarget = null;
+let earthClickState = 0; // 0: 未点击, 1: 远距离, 2: 近距离
 function setInfoCard(p) {
   cardTitle.textContent = p.name;
   const period = (2 * Math.PI) / (p.orbitSpeed * 0.02);
-  cardBody.innerHTML = `Distance: ${
-    p.distance
-  } (scaled)<br/>Orbit inc.: ${THREE.MathUtils.radToDeg(
+  
+  let distanceInfo = `Distance: ${p.distance} (scaled)`;
+  if (p.name === "Earth" && earthClickState > 0) {
+    const distanceText = earthClickState === 1 ? "远距离观察" : "近距离观察";
+    distanceInfo += `<br/>观察模式: ${distanceText}`;
+  }
+  
+  cardBody.innerHTML = `${distanceInfo}<br/>Orbit inc.: ${THREE.MathUtils.radToDeg(
     p.orbitInclination
   ).toFixed(1)}°<br/>Axial tilt: ${THREE.MathUtils.radToDeg(
     p.axialTilt
@@ -426,6 +432,51 @@ function flyToPlanet(p) {
   setInfoCard(p);
   currentTarget = p;
 }
+
+function flyToEarth(level) {
+  const earth = planets.find((p) => p.name === "Earth");
+  if (!earth) return;
+  
+  const worldPos = new THREE.Vector3();
+  earth.holder.getWorldPosition(worldPos);
+  const dir = worldPos.clone().sub(controls.target).normalize();
+  const camStart = camera.position.clone();
+  
+  let camEnd, targetEnd, dur;
+  
+  if (level === 1) {
+    // 远距离：标准距离
+    camEnd = worldPos
+      .clone()
+      .add(dir.multiplyScalar(earth.mesh.geometry.parameters.radius * 8 + 20));
+    targetEnd = worldPos.clone();
+    dur = 1.6;
+    earthClickState = 1;
+  } else if (level === 2) {
+    // 近距离：非常接近地球表面
+    camEnd = worldPos
+      .clone()
+      .add(dir.multiplyScalar(earth.mesh.geometry.parameters.radius * 2.5 + 5));
+    targetEnd = worldPos.clone();
+    dur = 2.0;
+    earthClickState = 2;
+  }
+  
+  const targetStart = controls.target.clone();
+  let k = 0;
+  const ease = (x) => (x === 1 ? 1 : 1 - Math.pow(2, -10 * x));
+  
+  (function step() {
+    k += 1 / 60;
+    const e = ease(Math.min(1, k / dur));
+    camera.position.lerpVectors(camStart, camEnd, e);
+    controls.target.lerpVectors(targetStart, targetEnd, e);
+    if (e < 1) requestAnimationFrame(step);
+  })();
+  
+  setInfoCard(earth);
+  currentTarget = earth;
+}
 function onPointerDown(ev) {
   mouse.x = (ev.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(ev.clientY / window.innerHeight) * 2 + 1;
@@ -434,16 +485,38 @@ function onPointerDown(ev) {
   const inter = raycaster.intersectObjects(meshes, false)[0];
   if (inter) {
     const p = planets.find((pp) => pp.mesh === inter.object);
-    flyToPlanet(p);
+    
+    // 特殊处理地球点击
+    if (p.name === "Earth") {
+      if (earthClickState === 0) {
+        // 第一次点击：飞到远距离
+        flyToEarth(1);
+      } else if (earthClickState === 1) {
+        // 第二次点击：飞到近距离
+        flyToEarth(2);
+      } else if (earthClickState === 2) {
+        // 第三次点击：重置状态，回到远距离
+        earthClickState = 0;
+        flyToEarth(1);
+      }
+    } else {
+      // 其他行星使用标准飞行
+      flyToPlanet(p);
+      // 重置地球点击状态
+      earthClickState = 0;
+    }
   } else {
     infoCard.style.display = "none";
     currentTarget = null;
+    // 重置地球点击状态
+    earthClickState = 0;
   }
 }
 window.addEventListener("pointerdown", onPointerDown);
 focusEarthBtn.addEventListener("click", () => {
-  const e = planets.find((p) => p.name === "Earth");
-  if (e) flyToPlanet(e);
+  // 重置地球点击状态并飞到远距离
+  earthClickState = 0;
+  flyToEarth(1);
 });
 
 // ---------- Earth Mode (realistic Earth: day/night + clouds + atmosphere) ----------
