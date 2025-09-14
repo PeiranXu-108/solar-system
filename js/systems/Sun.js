@@ -32,6 +32,7 @@ export class Sun {
         blending: THREE.AdditiveBlending,
         transparent: true,
         depthWrite: false,
+        toneMapped: false,
       })
     );
     this.glow.scale.set(150, 150, 1);

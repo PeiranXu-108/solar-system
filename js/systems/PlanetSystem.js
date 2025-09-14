@@ -8,6 +8,7 @@ export class PlanetSystem {
     this.belt = null;
     this.moon = null;
     this.moonPivot = null;
+    this.earthRef = null;
     this.init();
   }
 
@@ -19,7 +20,7 @@ export class PlanetSystem {
  
   makeOrbit(radius, tilt = 0) {
     const g = new THREE.BufferGeometry();
-    const seg = 256;
+    const seg = 128; // sufficient resolution, halves line vertices
     const v = [];
     for (let i = 0; i <= seg; i++) {
       const t = (i / seg) * Math.PI * 2;
@@ -51,8 +52,10 @@ export class PlanetSystem {
     const group = new THREE.Group();
     this.scene.add(group);
     
+    // Reduce geometry segments for small planets, keep quality for large
+    const segs = Math.min(64, Math.max(16, Math.round(radius * 6)));
     const mesh = new THREE.Mesh(
-      new THREE.SphereGeometry(radius, 64, 64),
+      new THREE.SphereGeometry(radius, segs, segs),
       new THREE.MeshStandardMaterial({
         map: texture ? this.textureManager.loadColorTex(texture) : null,
         color: 0xffffff,
@@ -91,6 +94,7 @@ export class PlanetSystem {
         side: THREE.DoubleSide,
         transparent: true,
         opacity: 0.9,
+        toneMapped: false,
       });
       ringGeo.rotateX(-Math.PI / 2);
       const ringMesh = new THREE.Mesh(ringGeo, ringMat);
@@ -98,7 +102,7 @@ export class PlanetSystem {
       holder.add(ringMesh);
     }
     
-    this.planets.push({
+    const planet = {
       name,
       pivot,
       holder,
@@ -109,7 +113,9 @@ export class PlanetSystem {
       rotationSpeed,
       orbitInclination,
       axialTilt,
-    });
+    };
+    this.planets.push(planet);
+    if (name === "Earth") this.earthRef = planet;
   }
 
   createPlanets() {
@@ -261,8 +267,9 @@ export class PlanetSystem {
     
     this.belt.rotation.y += dt * 0.0015;
     
-    if (!this.moon.parent && this.getEarth()?.holder) {
-      const earthHolder = this.getEarth().holder;
+    if (!this.moon.parent && (this.earthRef?.holder || this.getEarth()?.holder)) {
+      const earth = this.earthRef || this.getEarth();
+      const earthHolder = earth.holder;
       this.moonPivot.rotation.x = 0.45;
       earthHolder.add(this.moonPivot);
       this.moon.position.x = 8;

@@ -78,15 +78,23 @@ export class SceneManager {
     const onResize = () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
+      const pr = Math.min(window.devicePixelRatio, 2);
+      this.renderer.setPixelRatio(pr);
       this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.composer.setSize(window.innerWidth, window.innerHeight);
+      if (this.composer.setPixelRatio) this.composer.setPixelRatio(pr);
     };
     window.addEventListener("resize", onResize);
   }
 
   render() {
     this.controls.update();
-    this.composer.render();
+    // Skip composer when bloom is effectively disabled for better performance
+    if (this.bloomPass && this.bloomPass.strength <= 0.001) {
+      this.renderer.render(this.scene, this.camera);
+    } else {
+      this.composer.render();
+    }
   }
 
   getScene() {
