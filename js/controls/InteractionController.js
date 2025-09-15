@@ -31,12 +31,45 @@ export class InteractionController {
     this.cardTitle.textContent = p.name;
     const period = (2 * Math.PI) / (p.orbitSpeed * 0.02);
     
-    this.cardBody.innerHTML = `Distance: ${p.distance} (scaled)<br/>Orbit inc.: ${THREE.MathUtils.radToDeg(
-      p.orbitInclination
-    ).toFixed(1)}°<br/>Axial tilt: ${THREE.MathUtils.radToDeg(
-      p.axialTilt
-    ).toFixed(1)}°<br/>Approx. period: ${period.toFixed(1)}s (sim)`;
+    const wikipediaUrl = this.getWikipediaUrl(p.name);
+    
+    this.cardBody.innerHTML = `
+      <div class="planet-info">
+        <p>Distance: ${p.distance} (scaled)<br/>
+        Orbit inc.: ${THREE.MathUtils.radToDeg(p.orbitInclination).toFixed(1)}°<br/>
+        Axial tilt: ${THREE.MathUtils.radToDeg(p.axialTilt).toFixed(1)}°<br/>
+        Approx. period: ${period.toFixed(1)}s (sim)</p>
+      </div>
+      <div class="wikipedia-section">
+        <h4>
+          <a href="${wikipediaUrl}" target="_blank" rel="noopener" style="color: #22d3ee; text-decoration: none;">
+            Wikipedia Information
+          </a>
+        </h4>
+        <iframe 
+          src="${wikipediaUrl}" 
+          width="100%" 
+          height="400" 
+          frameborder="0"
+          style="border-radius: 8px; margin-top: 8px; background: white;">
+        </iframe>
+      </div>
+    `;
     this.infoCard.style.display = "block";
+  }
+
+  getWikipediaUrl(planetName) {
+    const wikipediaUrls = {
+      'Mercury': 'https://en.wikipedia.org/wiki/Mercury_(planet)',
+      'Venus': 'https://en.wikipedia.org/wiki/Venus',
+      'Earth': 'https://en.wikipedia.org/wiki/Earth',
+      'Mars': 'https://en.wikipedia.org/wiki/Mars',
+      'Jupiter': 'https://en.wikipedia.org/wiki/Jupiter',
+      'Saturn': 'https://en.wikipedia.org/wiki/Saturn',
+      'Uranus': 'https://en.wikipedia.org/wiki/Uranus',
+      'Neptune': 'https://en.wikipedia.org/wiki/Neptune'
+    };
+    return wikipediaUrls[planetName] || 'https://en.wikipedia.org/wiki/Planet';
   }
 
   flyToPlanet(p) {
@@ -76,20 +109,25 @@ export class InteractionController {
     
     if (inter) {
       const p = this.planetSystem.getPlanets().find((pp) => pp.mesh === inter.object);
-      // 所有行星使用标准飞行
       this.flyToPlanet(p);
     } else {
-      this.infoCard.style.display = "none";
-      this.currentTarget = null;
+      const rect = this.infoCard.getBoundingClientRect();
+      const isClickInsideCard = ev.clientX >= rect.left && 
+                               ev.clientX <= rect.right && 
+                               ev.clientY >= rect.top && 
+                               ev.clientY <= rect.bottom;
+      
+      if (!isClickInsideCard) {
+        this.infoCard.style.display = "none";
+        this.currentTarget = null;
+      }
     }
   }
 
   focusEarth() {
-    // 进入地球模式并飞到地球
     if (this.earthMode) {
       this.earthMode.enterEarthMode();
     } else {
-      // 如果没有地球模式，使用标准飞行方式
       const earth = this.planetSystem.getEarth();
       if (earth) {
         this.flyToPlanet(earth);

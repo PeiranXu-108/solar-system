@@ -120,7 +120,9 @@ canvas {
   right: 14px;
   top: 74px;
   z-index: 12;
-  width: 300px;
+  width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
   display: none;
   background: rgba(2, 6, 23, 0.6);
   border: 1px solid rgba(148, 163, 184, 0.2);
@@ -134,4 +136,33 @@ canvas {
 }
 .card small {
   opacity: 0.8;
+}
+
+.planet-info {
+  margin-bottom: 12px;
+}
+
+.planet-info p {
+  margin: 0;
+  line-height: 1.4;
+  font-size: 13px;
+}
+
+.wikipedia-section {
+  margin-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  padding-top: 12px;
+}
+
+.wikipedia-section h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #22d3ee;
+}
+
+.wikipedia-section iframe {
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  opacity: 0.75;
 }
