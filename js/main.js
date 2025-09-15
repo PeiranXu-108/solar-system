@@ -101,9 +101,6 @@ class SolarSystemApp {
       this.sceneManager.getBloomPass().strength = 0.8 + beat * 0.8;
     }
     
-    // 更新像素比例
-    this.starfield.updatePixelRatio();
-    
     // 渲染场景
     this.sceneManager.render();
   }

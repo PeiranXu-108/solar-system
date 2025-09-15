@@ -87,6 +87,7 @@ canvas {
   pointer-events: none;
   transform: translate(-50%, -50%);
   font-weight: 600;
+  will-change: transform, opacity;
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.12),
     0 0 18px rgba(59, 130, 246, 0.2);
 }

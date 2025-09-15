@@ -78,6 +78,7 @@ export class Lighting {
         opacity: 0.05,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
+        toneMapped: false,
       });
       const sp = new THREE.Sprite(sm);
       sp.scale.setScalar(800 + Math.random() * 400);

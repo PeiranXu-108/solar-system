@@ -6,6 +6,9 @@ export class Starfield {
     this.stars = null;
     this.starMat = null;
     this.init();
+    // Update pixel ratio only when needed (on resize)
+    this._onResize = () => this.updatePixelRatio();
+    window.addEventListener("resize", this._onResize);
   }
 
   init() {
