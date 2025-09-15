@@ -13,6 +13,12 @@ export class InteractionController {
     this.cardTitle = null;
     this.cardBody = null;
     
+    this.isDragging = false;
+    this.dragStartX = 0;
+    this.dragStartY = 0;
+    this.cardStartX = 0;
+    this.cardStartY = 0;
+    
     this.init();
   }
 
@@ -25,6 +31,8 @@ export class InteractionController {
 
   setupEventListeners() {
     window.addEventListener("pointerdown", (ev) => this.onPointerDown(ev));
+    window.addEventListener("pointermove", (ev) => this.onPointerMove(ev));
+    window.addEventListener("pointerup", (ev) => this.onPointerUp(ev));
   }
 
   setInfoCard(p) {
@@ -117,7 +125,17 @@ export class InteractionController {
                                ev.clientY >= rect.top && 
                                ev.clientY <= rect.bottom;
       
-      if (!isClickInsideCard) {
+      if (isClickInsideCard) {
+        const titleRect = this.cardTitle.getBoundingClientRect();
+        const isClickOnTitle = ev.clientX >= titleRect.left && 
+                              ev.clientX <= titleRect.right && 
+                              ev.clientY >= titleRect.top && 
+                              ev.clientY <= titleRect.bottom;
+        
+        if (isClickOnTitle) {
+          this.startDragging(ev);
+        }
+      } else {
         this.infoCard.style.display = "none";
         this.currentTarget = null;
       }
@@ -137,5 +155,51 @@ export class InteractionController {
 
   getCurrentTarget() {
     return this.currentTarget;
+  }
+
+  startDragging(ev) {
+    this.isDragging = true;
+    this.dragStartX = ev.clientX;
+    this.dragStartY = ev.clientY;
+    
+    const rect = this.infoCard.getBoundingClientRect();
+    this.cardStartX = rect.left;
+    this.cardStartY = rect.top;
+    
+    this.infoCard.style.cursor = 'grabbing';
+    this.infoCard.style.userSelect = 'none';
+    
+    ev.preventDefault();
+  }
+
+  onPointerMove(ev) {
+    if (this.isDragging) {
+      const deltaX = ev.clientX - this.dragStartX;
+      const deltaY = ev.clientY - this.dragStartY;
+      
+      const newX = this.cardStartX + deltaX;
+      const newY = this.cardStartY + deltaY;
+      
+      const maxX = window.innerWidth - this.infoCard.offsetWidth;
+      const maxY = window.innerHeight - this.infoCard.offsetHeight;
+      
+      const clampedX = Math.max(0, Math.min(newX, maxX));
+      const clampedY = Math.max(0, Math.min(newY, maxY));
+      
+      this.infoCard.style.left = clampedX + 'px';
+      this.infoCard.style.top = clampedY + 'px';
+      this.infoCard.style.right = 'auto';
+      this.infoCard.style.bottom = 'auto';
+      
+      ev.preventDefault();
+    }
+  }
+
+  onPointerUp(ev) {
+    if (this.isDragging) {
+      this.isDragging = false;
+      this.infoCard.style.cursor = 'default';
+      this.infoCard.style.userSelect = 'auto';
+    }
   }
 }

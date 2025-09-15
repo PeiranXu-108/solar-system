@@ -133,6 +133,19 @@ canvas {
 .card h3 {
   margin: 0 0 6px;
   font-size: 16px;
+  cursor: grab;
+  user-select: none;
+  padding: 4px 0;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.card h3:hover {
+  background-color: rgba(34, 211, 238, 0.1);
+}
+
+.card h3:active {
+  cursor: grabbing;
 }
 .card small {
   opacity: 0.8;
